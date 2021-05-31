@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="robot_namespace" default="/"/>
+  <arg name="laser_enabled" default="$(optenv HUSKY_LMS1XX_ENABLED false)"/>
+  <arg name="realsense_enabled" default="$(optenv HUSKY_REALSENSE_ENABLED false)"/>
+  <arg name="urdf_extras" default="$(optenv HUSKY_URDF_EXTRAS)"/>
+
+  
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="model" default="$(find xacro)/xacro '$(find husky_description)/urdf/husky.urdf.xacro"/>
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  
+  <param name="robot_description" command="$(find xacro)/xacro '$(find husky_description)/urdf/husky.urdf.xacro'
+    robot_namespace:=$(arg robot_namespace)
+    laser_enabled:=$(arg laser_enabled)
+    realsense_enabled:=$(arg realsense_enabled)
+    urdf_extras:=$(arg urdf_extras)
+    " />
+
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" 
+      args="-z 1.0 -unpause -urdf -model robot -param robot_description" respawn="false" output="screen" />
+
+   <node pkg="robot_state_publisher" type="robot_state_publisher"  name="robot_state_publisher">
+     <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+
+</launch>
